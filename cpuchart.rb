@@ -43,13 +43,28 @@ end
 
 configure :cpuchart do |s|
   s.interval = 1
-  s.graph = Dominikh::Chart.new(25, s.geometry.height)
-  s.graph.extend(Dominikh::ColoredGraph)
   s.cpus = CPU.all
+
+  if (s.config||{})[:combine]
+    s.graph = Dominikh::Chart.new(25, s.geometry.height)
+    graph.extend(Dominikh::ColoredGraph)
+  else
+    s.graphs = Array.new(s.cpus.size) {
+      graph = Dominikh::Chart.new(25, s.geometry.height)
+      graph.extend(Dominikh::ColoredGraph)
+      graph
+    }
+  end
 end
 
 on :run do |s|
-  val = s.cpus.map(&:load).inject(:+) / s.cpus.size.to_f
-  s.graph.push(val)
-  s.data = s.graph.to_s
+  if (s.config||{})[:combine]
+    val = s.cpus.map(&:load).inject(:+) / s.cpus.size.to_f
+    s.graph.push(val)
+    s.data = s.graph.to_s
+  else
+    loads = s.cpus.map(&:load)
+    s.graphs.zip(loads) {|graph, load| graph.push(load)}
+    s.data = s.graphs.map(&:to_s).join
+  end
 end
