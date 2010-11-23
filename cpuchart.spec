@@ -4,10 +4,10 @@
 Sur::Specification.new do |s|
   s.name        = "cpuchart"
   s.authors     = [ "Dominik Honnef" ]
-  s.date        = "Tue Oct 26 03:17 CEST 2010"
+  s.date        = "Tue Nov 22 11:26 CEST 2010"
   s.contact     = "dominikh@fork-bomb.org"
   s.description = "Shows cpu usage using a chart"
-  s.version     = "0.2"
+  s.version     = "0.3"
   s.tags        = [ "cpu", "chart" ]
   s.files       = [ "cpuchart.rb" ]
   s.icons       = [ ]
