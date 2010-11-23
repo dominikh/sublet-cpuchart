@@ -4,27 +4,30 @@ class CPU
   attr_reader :number
 
   def initialize(number)
-    @number  = number
-    @last    = 0
-    @delta   = 0
-    @sum     = 0
+    @number     = number
+    @last_check = 0
+    @last_sum   = 0
+    load # to have a sane start value
   end
 
   # @return [Fixnum] The current CPU load, as a percentage
   def load
-    load = 0
-    File.read("/proc/stat").scan(/cpu(\d+) (\d+) (\d+) (\d+)/) do |num, user, nice, system|
-      next unless num.to_i == @number
-      @delta      = Time.now.to_i - @last
-      @delta      = 1 if(0 == @delta)
-      @last       = Time.now.to_i
-      sum         = user.to_i + nice.to_i + system.to_i
-      use         = ((sum - @sum) / @delta / 100.0)
-      @sum        = sum
-      load = (use * 100.0).ceil % 100
-    end
+    File.read("/proc/stat").scan(/cpu#{@number} (\d+) (\d+) (\d+)/) do |user, nice, system|
+      delta      = Time.now.to_i - @last_check
+      delta = 1 if delta < 1
 
-    load
+      @last_check       = Time.now.to_i
+
+      sum         = user.to_i + nice.to_i + system.to_i
+      use         = ((sum - @last_sum) / delta / 100.0)
+
+      @last_sum        = sum
+
+      load = (use * 100.0).ceil
+      load = 100 if load > 100
+
+      return load
+    end
   end
 
   # @return [Array<CPU>] An array of all {CPU CPUs}
